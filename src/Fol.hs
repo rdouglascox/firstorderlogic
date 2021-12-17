@@ -72,6 +72,8 @@ fv fm =
 generalize :: Formula Fol -> Formula Fol
 generalize fm = foldr Forall fm( fv  fm)
 
+-- | substitutions
+
 -- | substitution in terms
 tsubst :: Map.Map String Term -> Term -> Term
 tsubst sfn tm =
@@ -80,15 +82,14 @@ tsubst sfn tm =
       Fn f args -> Fn f (map (tsubst sfn) args)
 
 
-
--- | substitution in formulas
-
-variant :: Foldable t => String -> t String -> String
+-- | get a variant on a variable
+variant :: String -> [String] -> String
 variant x vars = if x `elem` vars
      then variant (x ++ "'") vars
      else x
 
-
+-- | substitution in formulas
+subst :: Map.Map String Term -> Formula Fol -> Formula Fol
 subst subfn fm =
     case fm of
         Bot -> Bot
@@ -102,11 +103,260 @@ subst subfn fm =
         Forall x p -> substq subfn Forall x p
         Exists x p -> substq subfn Exists x p
 
+
+substq :: Map.Map String Term -> (String -> Formula Fol -> Formula Fol) -> String -> Formula Fol -> Formula Fol
 substq subfn quant x p =
     let x' = if any (\k -> case Map.lookup k subfn of
-                                 Just v -> x `elem` fv v
+                                 Just v -> x `elem` fvt v
                                  Nothing -> False) (fv p \\ [x])
                 then variant x (fv (subst (Map.delete x subfn) p))
                 else x in
                     quant x' (subst (Map.insert x (Var x') subfn) p)
+
+-- simplify
+
+-- | remove vacuous quantifiers
+simplify1 :: Formula Fol -> Formula Fol
+simplify1 fm = case fm of
+  Forall x p -> if x `elem` fv p then fm else p
+  Exists x p -> if x `elem` fv p then fm else p
+  _ -> psimplify1 fm
+
+-- | propositional simplication
+psimplify1 :: Formula Fol -> Formula Fol
+psimplify1 fm = case fm of
+  Not Bot -> Top
+  Not Top -> Bot
+  Not (Not p) -> p
+  And p Bot -> Bot
+  And Bot p -> Bot
+  And p Top -> p
+  And Top p -> p
+  Or p Bot -> p
+  Or Bot p -> p
+  Or p Top -> Top
+  Or Top p -> Top
+  Imp Bot p -> Top
+  Imp Top p -> p
+  Imp p Bot -> Not p
+  Iff p Top -> p
+  Iff Top p -> p
+  Iff p Bot -> Not p
+  Iff Bot p -> Not p
+  _ -> fm
+
+-- simplify fol formula
+
+simplify :: Formula Fol -> Formula Fol
+simplify fm = case fm of
+  Not p -> simplify1 (Not (simplify p))
+  And p q -> simplify1 (And (simplify p) (simplify q))
+  Or p q -> simplify1 (Or (simplify p) (simplify q))
+  Imp p q -> simplify1 (Imp (simplify p) (simplify q))
+  Iff p q -> simplify1 (Iff (simplify p) (simplify q))
+  Forall s p -> simplify1 (Forall s (simplify p))
+  Exists s p -> simplify1 (Exists s (simplify p))
+  _ -> fm
+
+-- negation normal form for fol
+
+nnf :: Formula Fol -> Formula Fol
+nnf fm = case fm of
+    And p q -> And (nnf p) (nnf q)
+    Or p q -> Or (nnf p) (nnf q)
+    Imp p q -> Or (nnf (Not p)) (nnf q)
+    Iff p q -> Or (And (nnf p) (nnf q)) (And (nnf (Not p)) (nnf (Not q)))
+    Not (Not p) -> p
+    Not (And p q) -> Or (nnf (Not p)) (nnf (Not q))
+    Not (Or p q) -> And (nnf (Not p)) (nnf (Not q))
+    Not (Imp p q) -> And (nnf p) (nnf (Not q))
+    Not (Iff p q) -> Or (And (nnf p) (nnf (Not q))) (And (nnf (Not p)) (nnf q))
+    Forall x p -> Forall x (nnf p)
+    Exists x p -> Exists x (nnf p)
+    Not (Forall x p) -> Exists x (nnf (Not p))
+    Not (Exists x p) -> Forall x (nnf (Not p))
+    _ -> fm
+
+pullquants :: Formula Fol -> Formula Fol
+pullquants fm = case fm of
+    And (Forall x p) (Forall y q) -> pullq(True,True) fm Forall And x y p q
+    Or (Exists x p) (Exists y q) -> pullq(True,True) fm Exists Or x y p q
+    And (Forall x p) q -> pullq(True,False) fm Forall And x x p q
+    And p (Forall y q) -> pullq(False,True) fm Forall And y y p q
+    Or (Forall x p) q -> pullq(True,False) fm Forall Or x x p q
+    Or p (Forall y q) -> pullq(False,True) fm Forall Or y y p q
+    And (Exists x p) q -> pullq(True,False) fm Exists And x x p q
+    And p (Exists y q) -> pullq(False,True) fm Exists And y y p q
+    Or (Exists x p) q -> pullq(True,False) fm Exists Or x x p q
+    Or p (Exists y q) -> pullq(False,True) fm Exists Or y y p q
+    _ -> fm
+
+pullq (l,r) fm quant op x y p q =
+    let z = variant x (fv fm) in
+    let p' = if l then subst (Map.singleton x (Var z)) p else p in
+    let q' = if r then subst (Map.singleton x (Var z)) q else q in
+    quant z (pullquants (op p' q'))
+
+prenex :: Formula Fol -> Formula Fol
+prenex fm = case fm of
+  Forall x p -> Forall x (prenex p)
+  Exists x p -> Exists x (prenex p)
+  And p q -> pullquants (And (prenex p) (prenex q))
+  Or p q -> pullquants (Or (prenex p) (prenex q))
+  _ -> fm
+
+-- |prenex normal form
+pnf :: Formula Fol -> Formula Fol
+pnf fm = prenex (nnf (simplify fm))
+
+-- skolemize
+
+funcs :: Term -> [(String, Int)]
+funcs tm = case tm of
+    Var x -> []
+    Fn f args -> foldr (union . funcs) [(f,length args)] args
+
+functions :: Formula Fol -> [(String, Int)]
+functions = atomunion (\(R _ args) -> foldr (union . funcs) [] args)
+
+overatoms :: (t1 -> t2 -> t2) -> Formula t1 -> t2 -> t2
+overatoms f fm b =
+    case fm of
+        Atom a -> f a b
+        Not p -> overatoms f p b
+        And p q -> overatoms f p (overatoms f q b)
+        Or p q -> overatoms f p (overatoms f q b)
+        Imp p q -> overatoms f p (overatoms f q b)
+        Iff p q -> overatoms f p (overatoms f q b)
+        Forall x p -> overatoms f p b
+        Exists x p -> overatoms f p b
+        _ -> b
+
+atomunion f fm = nub (overatoms (\h t -> f h ++ t) fm [])
+
+skolem :: Formula Fol -> [String] -> (Formula Fol, [String])
+skolem fm fns =
+    case fm of
+        Exists y p ->
+            let xs = fv fm in
+            let f = variant (if null xs then "c_" ++ y else "f_" ++ y) fns in
+            let fx = Fn f (map Var xs) in
+            skolem (subst (Map.singleton y fx) p) (f:fns)
+        Forall x p -> let (p',fns') = skolem p fns in (Forall x p', fns)
+        And p q -> skolem2 And (p,q) fns
+        Or p q-> skolem2 Or (p,q) fns
+        _ -> (fm,fns)
+
+skolem2 cons (p,q) fns =
+    let (p',fns') = skolem p fns in
+    let (q',fns'') = skolem q fns' in
+    (cons p' q',fns'')
+
+
+askolemize :: Formula Fol -> Formula Fol
+askolemize fm = fst ((skolem $ nnf $ simplify fm) (map fst (functions fm)))
+
+specialize :: Formula Fol -> Formula Fol
+specialize fm =
+    case fm of
+        Forall x p -> specialize p
+        _ -> fm
+
+skolemize :: Formula Fol -> Formula Fol
+skolemize fm = specialize (pnf(askolemize fm))
+
+-- canonical models
+
+pholds d fm = eval fm (d . Atom)
+
+eval fm v = case fm of
+  Bot -> False
+  Top -> True
+  Atom x -> v x
+  Not p -> not (eval p v)
+  And p q -> eval p v && eval q v
+  Or p q -> eval p v || eval q v
+  Imp p q -> not (eval p v) || eval q v
+  Iff p q -> eval p v == eval q v
+  _ -> error "tried to eval something not evaluable"
+
+herbfuns :: Formula Fol -> ([(String, Int)], [(String, Int)])
+herbfuns fm =
+    let syms@(cns,fns) = partition ((== 0) . snd) (functions fm) in
+        if null cns
+            then ([("c",0)],fns)
+            else syms
+
+-- enumerate all ground terms involving n functions 
+
+groundterms cntms _ 0 = cntms
+groundterms cntms funcs n =
+  let grtps (f, arity) =  map (Fn f) (groundtuples cntms funcs (n-1) arity) in
+  concatMap grtps funcs
+
+
+groundtuples _ _ 0 0 = [[]]
+groundtuples _ _ _ 0 = []
+groundtuples cntms funcs n m =
+  let tups k = allpairs (:)
+               (groundterms cntms funcs k)
+               (groundtuples cntms funcs (n-k) (m-1)) in
+  concatMap tups [0 .. n]
+
+allpairs :: (t1 -> t2 -> a) -> [t1] -> [t2] -> [a]
+allpairs f xs ys = [f x y | x <- xs, y <- ys]
+
+herbloop mfn tfn f10 cntms funcs fvs n fl tried tuples = do
+    putStrLn (show (length tried) ++ " ground instances tried; " ++ show (length fl) ++ " items in list")
+    case tuples of
+        [] -> let newtups = groundtuples cntms funcs n (length fvs) in
+              herbloop mfn tfn f10 cntms funcs fvs (n+1) fl tried newtups
+        tup:tups -> let fl' = mfn f10 (subst $ Map.fromList $ zip fvs tup) fl in
+                    if not (tfn fl') then return $ tup:tried else
+                    herbloop mfn tfn f10 cntms funcs fvs n fl' (tup:tried) tups
+
+gilmoreloop =
+    let mfn djs0 ifn djs = filter (not . mytrivial) (mydistrib (map (map ifn) djs0) djs) in
+            herbloop mfn (/= [])
+
+-- helpers
+
+mydistrib :: Eq a => [[a]] -> [[a]] -> [[a]]
+mydistrib xs ys = [x `union` y | x <- xs, y <- ys]
+
+mytrivial :: Eq a => [Formula a] -> Bool
+mytrivial xs = let (pos,neg) = partition positive xs in
+    intersect pos (map negate' neg ) /= []
+
+negative :: Formula a -> Bool
+negative (Not p) = True
+negative _ = False
+
+positive :: Formula a -> Bool
+positive = not . negative
+
+negate' :: Formula a -> Formula a
+negate' (Not p) = p
+negate' x = Not x
+
+-- gilmore procedure
+
+gilmore :: Formula Fol -> IO Int
+gilmore fm =
+    let sfm = skolemize (Not (generalize fm)) in
+    let fvs = fv sfm in
+    let (consts,funcs) = herbfuns sfm in
+    let cntms = map (\(c,_) -> Fn c []) consts in
+    do tms <- gilmoreloop (simpdnf sfm) cntms funcs fvs 0 [[]] [] []
+       return (length tms)
+
+simpdnf :: Formula Fol -> [[Formula Fol ]]
+simpdnf fm = let djs = filter (not . mytrivial) (purednf (nnf fm)) in
+    let sdjs = Set.fromList $ map Set.fromList djs in
+    Set.toList $ Set.map Set.toList $  Set.filter (\d -> not (any (`Set.isProperSubsetOf` d) sdjs)) sdjs
+
+purednf :: Formula Fol -> [[Formula Fol]]
+purednf (And p q) = mydistrib (purednf p) (purednf q)
+purednf (Or p q) = purednf p `union` purednf q
+purednf x = [[x]]
 

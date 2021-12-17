@@ -2,8 +2,10 @@ module Data.Prop where
 
 data Term = Var String 
           | Fn String [Term]
+          deriving (Show,Eq,Ord)
 
 data Fol = R String [Term]
+        deriving (Show,Eq,Ord)
 
 data Formula a = Bot 
                | Top
@@ -15,5 +17,6 @@ data Formula a = Bot
                | Iff (Formula a) (Formula a)
                | Forall String (Formula a)
                | Exists String (Formula a)
+               deriving (Show,Eq,Ord)
 
 -- e.g. we will then have function involving "Formula Fol"
