@@ -28,6 +28,7 @@ library
       Data.Prop
       Fol
       Lib
+      Parsing.FolParser
   other-modules:
       Paths_firstorderlogic
   hs-source-dirs:
