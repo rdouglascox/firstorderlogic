@@ -1,5 +1,5 @@
 {
-module Parsers.FolToken where
+module Parsing.FolToken where
 }
 
 %wrapper "basic"
@@ -18,6 +18,8 @@ tokens :-
   $lower1b+                           { \s -> ConstantSymbol s }
   $lower2+                            { \s -> VariableSymbol s }
   $lower3+                            { \s -> FunctionSymbol s }
+  "True"                              { \s -> TopSymbol}
+  "False"                             { \s -> BotSymbol}
   "~"                                 { \s -> NegationSymbol }
   "&"                                 { \s -> ConjunctionSymbol }
   "v"                                 { \s -> DisjunctionSymbol }
@@ -30,10 +32,12 @@ tokens :-
   
 {
 
-data GPLIToken = PredicateSymbol String
+data FolToken = PredicateSymbol String
                | VariableSymbol String
                | ConstantSymbol String
                | FunctionSymbol String
+               | TopSymbol
+               | BotSymbol
                | NegationSymbol
                | ConjunctionSymbol
                | DisjunctionSymbol

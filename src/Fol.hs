@@ -6,6 +6,8 @@ import qualified Data.Map as Map
 import qualified Data.Set as Set
 import Data.Maybe
 
+import Parsing.Parser
+
 termval :: (a, String -> [b] -> b, c) -> Map.Map String b -> Term -> b
 termval m@(domain,func,pred) v tm =
     case tm of
@@ -267,6 +269,7 @@ skolemize fm = specialize (pnf(askolemize fm))
 
 -- canonical models
 
+pholds :: (Formula a -> Bool) -> Formula a -> Bool
 pholds d fm = eval fm (d . Atom)
 
 eval fm v = case fm of

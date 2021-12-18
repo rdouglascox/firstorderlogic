@@ -12,6 +12,9 @@ import Data.Prop
     pred         { PredicateSymbol $$ }
     const        { ConstantSymbol $$ }
     vari         { VariableSymbol $$ }
+    funct        { FunctionSymbol $$ }
+    top          { TopSymbol }
+    bot          { BotSymbol }
     "~"          { NegationSymbol }
     "&"          { ConjunctionSymbol }
     "v"          { DisjunctionSymbol }
@@ -24,24 +27,32 @@ import Data.Prop
 
 %%
 
-prop : pred terms                { Atomic (Predicate $1) $2  }
-     | "~" prop                  { Negation $2 } 
-     | "(" prop "&" prop ")"     { Conjunction $2 $4 }  
-     | "(" prop "v" prop ")"     { Disjunction $2 $4 }
-     | "(" prop "->" prop ")"    { Conditional $2 $4 }
-     | "(" prop "<->" prop ")"   { Biconditional $2 $4 }
-     | "@" vari prop             { Universal $2 $3 }
-     | "#" vari prop             { Existential $2 $3 }
+form : fol                       { Atom $1 }
+     | bot                       { Bot }
+     | top                       { Top }
+     | "~" form                  { Not $2 } 
+     | "~" "(" form ")"          { Not $3 }
+     | "(" form "&" form ")"     { And $2 $4 }  
+     | "(" form "v" form ")"     { Or $2 $4 }
+     | "(" form "->" form ")"    { Imp $2 $4 }
+     | "(" form "<->" form ")"   { Iff $2 $4 }
+     | "@" vari form             { Forall $2 $3 }
+     | "#" vari form             { Exists $2 $3 }
 
-terms : const                { [Constant $1] }
-      | vari                 { [Variable $1] }      
-      | const terms          { Constant $1 : $2 }
-      | vari terms           { Variable $1 : $2 }
+fol : pred terms                 {R $1 $2 }
+
+terms : const                { [Fn $1 []] }
+      | vari                 { [Var $1] } 
+      | funct "(" terms ")"  { [Fn $1 $3] }
+      | const terms          { (Fn $1 []) : $2 }
+      | vari terms           { (Var $1) : $2 } 
+      | funct "(" terms ")" terms { (Fn $1 $3) : $5 }
+  
 
 
 {
 
-parseError :: [GPLIToken] -> a
+parseError :: [FolToken] -> a
 parseError _ = error "Parse Error"
 
 }
