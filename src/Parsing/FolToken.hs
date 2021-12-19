@@ -450,7 +450,7 @@ alexGetByte (_,[],(c:s)) = case utf8Encode' c of
 alex_tab_size :: Int
 alex_tab_size = 8
 alex_base :: Array Int Int
-alex_base = listArray (0 :: Int, 27)
+alex_base = listArray (0 :: Int, 29)
   [ -8
   , -95
   , -94
@@ -467,6 +467,8 @@ alex_base = listArray (0 :: Int, 27)
   , -58
   , 98
   , -100
+  , -105
+  , -92
   , -68
   , 0
   , 0
@@ -489,37 +491,37 @@ alex_table = listArray (0 :: Int, 368)
   , 9
   , 9
   , 9
-  , 17
-  , 18
+  , 19
+  , 20
   , 1
   , 2
   , 7
   , 4
-  , 23
+  , 25
+  , 24
+  , 16
+  , 9
+  , 9
+  , 9
+  , 9
+  , 9
+  , 15
+  , 15
+  , 15
+  , 0
+  , 9
+  , 17
+  , 0
+  , 27
+  , 0
+  , 0
   , 22
   , 0
-  , 9
-  , 9
-  , 9
-  , 9
-  , 9
-  , 15
-  , 15
-  , 15
-  , 0
-  , 9
-  , 0
-  , 0
-  , 25
-  , 0
-  , 0
-  , 20
-  , 0
-  , 26
-  , 27
-  , 16
-  , 16
-  , 16
+  , 28
+  , 29
+  , 18
+  , 18
+  , 18
   , 8
   , 9
   , 13
@@ -539,7 +541,7 @@ alex_table = listArray (0 :: Int, 368)
   , 0
   , 0
   , 0
-  , 24
+  , 26
   , 11
   , 11
   , 11
@@ -577,9 +579,9 @@ alex_table = listArray (0 :: Int, 368)
   , 13
   , 13
   , 13
-  , 16
-  , 16
-  , 16
+  , 18
+  , 18
+  , 18
   , 0
   , 14
   , 14
@@ -592,16 +594,16 @@ alex_table = listArray (0 :: Int, 368)
   , 14
   , 14
   , 14
+  , 17
+  , 23
+  , 16
+  , 15
+  , 15
+  , 15
+  , 0
+  , 0
   , 0
   , 21
-  , 0
-  , 15
-  , 15
-  , 15
-  , 0
-  , 0
-  , 0
-  , 19
   , 11
   , 11
   , 11
@@ -870,7 +872,7 @@ alex_check = listArray (0 :: Int, 368)
   , 108
   , 62
   , 62
-  , -1
+  , 119
   , 9
   , 10
   , 11
@@ -881,7 +883,7 @@ alex_check = listArray (0 :: Int, 368)
   , 122
   , -1
   , 32
-  , -1
+  , 117
   , -1
   , 35
   , -1
@@ -965,9 +967,9 @@ alex_check = listArray (0 :: Int, 368)
   , 114
   , 115
   , 116
-  , -1
+  , 117
   , 118
-  , -1
+  , 119
   , 120
   , 121
   , 122
@@ -1228,7 +1230,7 @@ alex_check = listArray (0 :: Int, 368)
   ]
 
 alex_deflt :: Array Int Int
-alex_deflt = listArray (0 :: Int, 27)
+alex_deflt = listArray (0 :: Int, 29)
   [ -1
   , -1
   , -1
@@ -1257,9 +1259,11 @@ alex_deflt = listArray (0 :: Int, 27)
   , -1
   , -1
   , -1
+  , -1
+  , -1
   ]
 
-alex_accept = listArray (0 :: Int, 27)
+alex_accept = listArray (0 :: Int, 29)
   [ AlexAccNone
   , AlexAccNone
   , AlexAccNone
@@ -1270,6 +1274,8 @@ alex_accept = listArray (0 :: Int, 27)
   , AlexAccNone
   , AlexAccNone
   , AlexAccSkip
+  , AlexAcc 19
+  , AlexAcc 18
   , AlexAcc 17
   , AlexAcc 16
   , AlexAcc 15
@@ -1290,28 +1296,30 @@ alex_accept = listArray (0 :: Int, 27)
   , AlexAcc 0
   ]
 
-alex_actions = array (0 :: Int, 18)
-  [ (17,alex_action_1)
-  , (16,alex_action_1)
-  , (15,alex_action_1)
-  , (14,alex_action_2)
-  , (13,alex_action_3)
-  , (12,alex_action_4)
-  , (11,alex_action_5)
-  , (10,alex_action_6)
-  , (9,alex_action_7)
-  , (8,alex_action_8)
-  , (7,alex_action_9)
-  , (6,alex_action_10)
-  , (5,alex_action_11)
-  , (4,alex_action_12)
-  , (3,alex_action_13)
-  , (2,alex_action_14)
-  , (1,alex_action_15)
-  , (0,alex_action_16)
+alex_actions = array (0 :: Int, 20)
+  [ (19,alex_action_1)
+  , (18,alex_action_1)
+  , (17,alex_action_1)
+  , (16,alex_action_2)
+  , (15,alex_action_3)
+  , (14,alex_action_4)
+  , (13,alex_action_5)
+  , (12,alex_action_6)
+  , (11,alex_action_7)
+  , (10,alex_action_8)
+  , (9,alex_action_9)
+  , (8,alex_action_10)
+  , (7,alex_action_11)
+  , (6,alex_action_12)
+  , (5,alex_action_13)
+  , (4,alex_action_14)
+  , (3,alex_action_15)
+  , (2,alex_action_16)
+  , (1,alex_action_17)
+  , (0,alex_action_18)
   ]
 
-{-# LINE 33 "FolToken.x" #-}
+{-# LINE 37 "FolToken.x" #-}
 
 
 data FolToken = PredicateSymbol String
@@ -1336,18 +1344,20 @@ alex_action_1 =  \s -> PredicateSymbol s
 alex_action_2 =  \s -> ConstantSymbol s 
 alex_action_3 =  \s -> ConstantSymbol s 
 alex_action_4 =  \s -> VariableSymbol s 
-alex_action_5 =  \s -> FunctionSymbol s 
-alex_action_6 =  \s -> TopSymbol
-alex_action_7 =  \s -> BotSymbol
-alex_action_8 =  \s -> NegationSymbol 
-alex_action_9 =  \s -> ConjunctionSymbol 
-alex_action_10 =  \s -> DisjunctionSymbol 
-alex_action_11 =  \s -> ConditionalSymbol 
-alex_action_12 =  \s -> BiconditionalSymbol 
-alex_action_13 =  \s -> UniversalSymbol 
-alex_action_14 =  \s -> ExistentialSymbol 
-alex_action_15 =  \s -> LeftPar 
-alex_action_16 =  \s -> RightPar 
+alex_action_5 =  \s -> VariableSymbol s 
+alex_action_6 =  \s -> VariableSymbol s 
+alex_action_7 =  \s -> FunctionSymbol s 
+alex_action_8 =  \s -> TopSymbol
+alex_action_9 =  \s -> BotSymbol
+alex_action_10 =  \s -> NegationSymbol 
+alex_action_11 =  \s -> ConjunctionSymbol 
+alex_action_12 =  \s -> DisjunctionSymbol 
+alex_action_13 =  \s -> ConditionalSymbol 
+alex_action_14 =  \s -> BiconditionalSymbol 
+alex_action_15 =  \s -> UniversalSymbol 
+alex_action_16 =  \s -> ExistentialSymbol 
+alex_action_17 =  \s -> LeftPar 
+alex_action_18 =  \s -> RightPar 
 {-# LINE 1 "templates/GenericTemplate.hs" #-}
 -- -----------------------------------------------------------------------------
 -- ALEX TEMPLATE

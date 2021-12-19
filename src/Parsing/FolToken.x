@@ -7,7 +7,9 @@ module Parsing.FolToken where
 $upper = A-Z
 $lower1a = a-e
 $lower1b = j-t
-$lower2 = x-z
+$lower2a = x-z
+$lower2b = w
+$lower2c = u
 $lower3 = f-h
 
 tokens :-
@@ -16,7 +18,9 @@ tokens :-
   $upper+                             { \s -> PredicateSymbol s }
   $lower1a+                           { \s -> ConstantSymbol s }
   $lower1b+                           { \s -> ConstantSymbol s }
-  $lower2+                            { \s -> VariableSymbol s }
+  $lower2a+                            { \s -> VariableSymbol s }
+  $lower2b+                            { \s -> VariableSymbol s }
+  $lower2c+                            { \s -> VariableSymbol s }
   $lower3+                            { \s -> FunctionSymbol s }
   "True"                              { \s -> TopSymbol}
   "False"                             { \s -> BotSymbol}

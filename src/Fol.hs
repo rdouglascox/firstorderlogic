@@ -6,7 +6,10 @@ import qualified Data.Map as Map
 import qualified Data.Set as Set
 import Data.Maybe
 
+import qualified DPLL
+
 import Parsing.Parser
+import Printing.Printer
 
 termval :: (a, String -> [b] -> b, c) -> Map.Map String b -> Term -> b
 termval m@(domain,func,pred) v tm =
@@ -319,28 +322,20 @@ herbloop mfn tfn f10 cntms funcs fvs n fl tried tuples = do
                     herbloop mfn tfn f10 cntms funcs fvs n fl' (tup:tried) tups
 
 gilmoreloop =
-    let mfn djs0 ifn djs = filter (not . mytrivial) (mydistrib (map (map ifn) djs0) djs) in
+    let mfn djs0 ifn djs = filter (not . wtrivial) (wdistrib' (map (map ifn) djs0) djs) in
             herbloop mfn (/= [])
 
--- helpers
+wtrivial :: Ord a => [Formula a] -> Bool
+wtrivial xs = DPLL.trivial (Set.fromList xs)
 
-mydistrib :: Eq a => [[a]] -> [[a]] -> [[a]]
-mydistrib xs ys = [x `union` y | x <- xs, y <- ys]
+wdistrib' :: Ord a => [[Formula a]] -> [[Formula a]] -> [[Formula a]]
+wdistrib' xs ys = unwrap (DPLL.distrib' (wrap xs) (wrap ys))
 
-mytrivial :: Eq a => [Formula a] -> Bool
-mytrivial xs = let (pos,neg) = partition positive xs in
-    intersect pos (map negate' neg ) /= []
+wrap :: Ord a => [[a]] -> Set.Set (Set.Set a)
+wrap xs = Set.fromList (map Set.fromList xs)
 
-negative :: Formula a -> Bool
-negative (Not p) = True
-negative _ = False
-
-positive :: Formula a -> Bool
-positive = not . negative
-
-negate' :: Formula a -> Formula a
-negate' (Not p) = p
-negate' x = Not x
+unwrap :: Ord a => Set.Set (Set.Set a) -> [[a]]
+unwrap xs = Set.toList (Set.map Set.toList xs)
 
 -- gilmore procedure
 
@@ -350,16 +345,37 @@ gilmore fm =
     let fvs = fv sfm in
     let (consts,funcs) = herbfuns sfm in
     let cntms = map (\(c,_) -> Fn c []) consts in
-    do tms <- gilmoreloop (simpdnf sfm) cntms funcs fvs 0 [[]] [] []
+    do tms <- gilmoreloop (wsimpdnf sfm) cntms funcs fvs 0 [[]] [] []
        return (length tms)
 
-simpdnf :: Formula Fol -> [[Formula Fol ]]
-simpdnf fm = let djs = filter (not . mytrivial) (purednf (nnf fm)) in
-    let sdjs = Set.fromList $ map Set.fromList djs in
-    Set.toList $ Set.map Set.toList $  Set.filter (\d -> not (any (`Set.isProperSubsetOf` d) sdjs)) sdjs
+wsimpdnf :: Ord a => Formula a -> [[Formula a]]
+wsimpdnf xs = unwrap (DPLL.simpdnf xs)
 
-purednf :: Formula Fol -> [[Formula Fol]]
-purednf (And p q) = mydistrib (purednf p) (purednf q)
-purednf (Or p q) = purednf p `union` purednf q
-purednf x = [[x]]
+p45 = Imp (foldl1 And [p45a,p45b,p45c]) p45d
+p45a = parser "@x((Fx&@y((Gy&Hxy)->Jxy))->@y((Gy&Hxy)->Ky))"
+p45b = parser "~#y(Ly&Ky)"
+p45c = parser "#x((Fx&@y(Hxy->Ly))&@y((Gy&Hxy)->Jxy))"
+p45d = parser "#x(Fx&~#x(Gy&Hxy))"
+
+pdmfn cjs0 ifn = union (map (map ifn) cjs0)
+
+dploop :: [[Formula Fol]] -> [Term] -> [(String, Int)] -> [String] -> Integer -> [[Formula Fol]] -> [[Term]] -> [[Term]] -> IO [[Term]]
+dploop = herbloop pdmfn wdpll
+
+wdpll :: Ord a => [[Formula a]] -> Bool
+wdpll xs = DPLL.dpll (wrap xs)
+
+davisputnam :: Formula Fol -> IO Int
+davisputnam fm =
+    let sfm = skolemize (Not (generalize fm)) in
+    let fvs = fv sfm in
+    let (consts,funcs) = herbfuns sfm in
+    let cntms = map (\(c,_)-> Fn c []) consts in
+       do length <$> dploop (wsimpcnf sfm) cntms funcs fvs 0 [] [] []
+
+
+wsimpcnf :: Ord a => Formula a -> [[Formula a]]
+wsimpcnf xs = unwrap (DPLL.simpcnf xs)
+
+p20 = parser "(@x@y#z@w((Px&Qy)->(Rx&Uw))->(#x#y(Px&Qy) -> #zRz))"
 
