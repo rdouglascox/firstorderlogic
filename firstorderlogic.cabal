@@ -26,14 +26,20 @@ source-repository head
 library
   exposed-modules:
       Conversions.Conversions
+      DPform.DPform
   other-modules:
+      Data.PLprop
       Data.Prop
+      DP
       DPLL
       Fol
       Lib
       Parsing.FolParser
       Parsing.FolToken
       Parsing.Parser
+      Parsing.PLParser
+      Parsing.PLToken1
+      Printing.PLprop
       Printing.Printer
       Paths_firstorderlogic
   hs-source-dirs:
@@ -43,6 +49,7 @@ library
     , base >=4.7 && <5
     , blaze-html
     , containers
+    , mtl
     , text
   default-language: Haskell2010
 
@@ -50,13 +57,19 @@ executable firstorderlogic-exe
   main-is: Main.hs
   other-modules:
       Conversions.Conversions
+      Data.PLprop
       Data.Prop
+      DP
+      DPform.DPform
       DPLL
       Fol
       Lib
       Parsing.FolParser
       Parsing.FolToken
       Parsing.Parser
+      Parsing.PLParser
+      Parsing.PLToken1
+      Printing.PLprop
       Printing.Printer
       Paths_firstorderlogic
   hs-source-dirs:
@@ -69,6 +82,7 @@ executable firstorderlogic-exe
     , blaze-html
     , containers
     , firstorderlogic
+    , mtl
     , text
   default-language: Haskell2010
 
@@ -86,5 +100,6 @@ test-suite firstorderlogic-test
     , blaze-html
     , containers
     , firstorderlogic
+    , mtl
     , text
   default-language: Haskell2010

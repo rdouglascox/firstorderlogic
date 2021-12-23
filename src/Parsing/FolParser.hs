@@ -1,5 +1,5 @@
 {-# OPTIONS_GHC -w #-}
-module Parsing.FolParser (happyFolParser) where
+module Parsing.FolParser where
 import Parsing.FolToken
 import Data.Prop
 import qualified Data.Array as Happy_Data_Array
@@ -439,14 +439,14 @@ happyNewToken action sts stk (tk:tks) =
 happyError_ explist 22 tk tks = happyError' (tks, explist)
 happyError_ explist _ tk tks = happyError' ((tk:tks), explist)
 
-happyThen :: () => Maybe a -> (a -> Maybe b) -> Maybe b
-happyThen = (Prelude.>>=)
-happyReturn :: () => a -> Maybe a
-happyReturn = (Prelude.return)
-happyThen1 m k tks = (Prelude.>>=) m (\a -> k a tks)
-happyReturn1 :: () => a -> b -> Maybe a
-happyReturn1 = \a tks -> (Prelude.return) a
-happyError' :: () => ([(FolToken)], [Prelude.String]) -> Maybe a
+happyThen :: () => E a -> (a -> E b) -> E b
+happyThen = (thenE)
+happyReturn :: () => a -> E a
+happyReturn = (returnE)
+happyThen1 m k tks = (thenE) m (\a -> k a tks)
+happyReturn1 :: () => a -> b -> E a
+happyReturn1 = \a tks -> (returnE) a
+happyError' :: () => ([(FolToken)], [Prelude.String]) -> E a
 happyError' = (\(tokens, _) -> parseError tokens)
 happyFolParser tks = happySomeParser where
  happySomeParser = happyThen (happyParse action_0 tks) (\x -> case x of {HappyAbsSyn4 z -> happyReturn z; _other -> notHappyAtAll })
@@ -454,7 +454,27 @@ happyFolParser tks = happySomeParser where
 happySeq = happyDontSeq
 
 
-parseError _ = error "Parse Error"
+data E a = Ok a | Failed String
+
+thenE :: E a -> (a -> E b) -> E b
+m `thenE` k =
+   case m of
+       Ok a -> k a
+       Failed e -> Failed e
+
+returnE :: a -> E a
+returnE a = Ok a
+
+failE :: String -> E a
+failE err = Failed err
+
+catchE :: E a -> (String -> E a) -> E a
+catchE m k =
+   case m of
+      Ok a -> Ok a
+      Failed e -> k e
+
+parseError tokens = failE "Parse error"
 {-# LINE 1 "templates/GenericTemplate.hs" #-}
 -- $Id: GenericTemplate.hs,v 1.26 2005/01/14 14:47:22 simonmar Exp $
 

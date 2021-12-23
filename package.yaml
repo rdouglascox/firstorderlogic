@@ -25,11 +25,13 @@ dependencies:
 - array
 - blaze-html
 - text
+- mtl
 
 library:
   source-dirs: src
   exposed-modules: 
     - Conversions.Conversions
+    - DPform.DPform
 
 executables:
   firstorderlogic-exe:

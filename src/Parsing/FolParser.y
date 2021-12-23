@@ -1,5 +1,5 @@
 {
-module Parsing.FolParser (happyFolParser) where
+module Parsing.FolParser where
 import Parsing.FolToken
 import Data.Prop
 }
@@ -7,7 +7,7 @@ import Data.Prop
 %name happyFolParser
 %tokentype { FolToken }
 %error { parseError }
-%monad {Maybe}
+%monad { E } { thenE } { returnE }
 
 %token
     pred         { PredicateSymbol $$ }
@@ -54,8 +54,27 @@ terms : const                { [Fn $1 []] }
 
 {
 
+data E a = Ok a | Failed String
 
-parseError _ = error "Parse Error"
+thenE :: E a -> (a -> E b) -> E b
+m `thenE` k =
+   case m of
+       Ok a -> k a
+       Failed e -> Failed e
+
+returnE :: a -> E a
+returnE a = Ok a
+
+failE :: String -> E a
+failE err = Failed err
+
+catchE :: E a -> (String -> E a) -> E a
+catchE m k =
+   case m of
+      Ok a -> Ok a
+      Failed e -> k e
+
+parseError tokens = failE "Parse error"
 
 
 }
