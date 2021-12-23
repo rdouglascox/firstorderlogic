@@ -1,6 +1,7 @@
 module Conversions.Conversions where
 
-import Parsing.Parser
+import Parsing.Parser ( parser )
+import Parsing.FolParser ( E(Failed, Ok) )
 import qualified Data.Text as T
 import qualified Text.Blaze.Html as H
 import qualified Text.Blaze.Html5 as H5
@@ -15,8 +16,8 @@ import qualified DPLL
 
 safeconversions :: T.Text -> (Bool,Bool,Bool,Bool) -> H.Html
 safeconversions t x = let pt = parser (T.unpack t) in case pt of
-                                Nothing -> H5.toHtml "I couldn't parse the input string"
-                                Just for -> conversions for x
+                        Ok for -> conversions for x
+                        Failed s ->  H5.toHtml "I couldn't parse the input string"
 
 conversions :: Formula Fol -> (Bool,Bool,Bool,Bool) -> H.Html
 conversions t (n,c,d,p) 
