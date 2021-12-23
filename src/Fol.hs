@@ -351,11 +351,12 @@ gilmore fm =
 wsimpdnf :: Ord a => Formula a -> [[Formula a]]
 wsimpdnf xs = unwrap (DPLL.simpdnf xs)
 
-p45 = Imp (foldl1 And [p45a,p45b,p45c]) p45d
+-- p45 = Imp (foldl1 And [p45a,p45b,p45c]) p45d
 p45a = parser "@x((Fx&@y((Gy&Hxy)->Jxy))->@y((Gy&Hxy)->Ky))"
 p45b = parser "~#y(Ly&Ky)"
 p45c = parser "#x((Fx&@y(Hxy->Ly))&@y((Gy&Hxy)->Jxy))"
 p45d = parser "#x(Fx&~#x(Gy&Hxy))"
+
 
 pdmfn cjs0 ifn = union (map (map ifn) cjs0)
 

@@ -7,6 +7,7 @@ import Data.Prop
 %name happyFolParser
 %tokentype { FolToken }
 %error { parseError }
+%monad {Maybe}
 
 %token
     pred         { PredicateSymbol $$ }
@@ -40,6 +41,7 @@ form : fol                       { Atom $1 }
      | "#" vari form             { Exists $2 $3 }
 
 fol : pred terms                 {R $1 $2 }
+    | pred                       {R $1 [] }
 
 terms : const                { [Fn $1 []] }
       | vari                 { [Var $1] } 
@@ -52,7 +54,8 @@ terms : const                { [Fn $1 []] }
 
 {
 
-parseError :: [FolToken] -> a
+
 parseError _ = error "Parse Error"
+
 
 }

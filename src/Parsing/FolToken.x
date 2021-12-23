@@ -53,4 +53,8 @@ data FolToken = PredicateSymbol String
                | RightPar
                deriving (Eq,Show)
 
+
+
+
+
 } 

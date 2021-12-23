@@ -1340,6 +1340,10 @@ data FolToken = PredicateSymbol String
                deriving (Eq,Show)
 
 
+
+
+
+
 alex_action_1 =  \s -> PredicateSymbol s 
 alex_action_2 =  \s -> ConstantSymbol s 
 alex_action_3 =  \s -> ConstantSymbol s 
