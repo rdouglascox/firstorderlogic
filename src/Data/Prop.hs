@@ -7,6 +7,8 @@ data Term = Var String
 data Fol = R String [Term]
         deriving (Show,Eq,Ord)
 
+newtype Prop = Prop String
+
 data Formula a = Bot 
                | Top
                | Atom a

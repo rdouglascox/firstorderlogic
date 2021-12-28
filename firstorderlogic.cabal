@@ -35,6 +35,13 @@ library
       Fol
       GPL
       GPLI
+      Grammar.Abs
+      Grammar.ErrM
+      Grammar.Lex
+      Grammar.Par
+      Grammar.Print
+      Grammar.Skel
+      Grammar.Test
       Lib
       Parsing.FolParser
       Parsing.FolToken
@@ -68,6 +75,13 @@ executable firstorderlogic-exe
       Fol
       GPL
       GPLI
+      Grammar.Abs
+      Grammar.ErrM
+      Grammar.Lex
+      Grammar.Par
+      Grammar.Print
+      Grammar.Skel
+      Grammar.Test
       Lib
       Parsing.FolParser
       Parsing.FolToken

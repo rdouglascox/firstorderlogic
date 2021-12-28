@@ -1,0 +1,11 @@
+
+Top.  Formula ::= "true";
+Bot.  Formula ::= "false";
+Atom. Formula ::= Prop;
+Not.  Formula ::= "~" Formula;
+And.  Formula ::= "(" Formula "&" Formula ")";
+Or.   Formula ::= "(" Formula "v" Formula ")";
+Imp.  Formula ::= "(" Formula "->" Formula ")";
+Iff.  Formula ::= "(" Formula "<->" Formula ")";
+
+token Prop (upper);
