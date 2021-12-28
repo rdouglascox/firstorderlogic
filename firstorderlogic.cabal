@@ -43,6 +43,7 @@ library
       Grammar.Skel
       Grammar.Test
       Lib
+      Parsing.BNFPLParser
       Parsing.FolParser
       Parsing.FolToken
       Parsing.Parser
@@ -83,6 +84,7 @@ executable firstorderlogic-exe
       Grammar.Skel
       Grammar.Test
       Lib
+      Parsing.BNFPLParser
       Parsing.FolParser
       Parsing.FolToken
       Parsing.Parser
