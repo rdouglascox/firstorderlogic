@@ -33,12 +33,15 @@ library
       DP
       DPLL
       Fol
+      GPL
+      GPLI
       Lib
       Parsing.FolParser
       Parsing.FolToken
       Parsing.Parser
       Parsing.PLParser
       Parsing.PLToken1
+      PL
       Printing.PLprop
       Printing.Printer
       Paths_firstorderlogic
@@ -63,12 +66,15 @@ executable firstorderlogic-exe
       DPform.DPform
       DPLL
       Fol
+      GPL
+      GPLI
       Lib
       Parsing.FolParser
       Parsing.FolToken
       Parsing.Parser
       Parsing.PLParser
       Parsing.PLToken1
+      PL
       Printing.PLprop
       Printing.Printer
       Paths_firstorderlogic
