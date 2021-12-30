@@ -433,7 +433,7 @@ tableau (fms, lits, n) cont (env,k) =
         [] -> Nothing
         And p q : unexp -> tableau (p:q:unexp, lits, n) cont (env,k)
         Or p q : unexp -> tableau (p:unexp, lits, n) cont (env,k)
-        fm @ (Forall x p) : unexp ->
+        fm@(Forall x p) : unexp ->
             let y = Var ("_" ++ show k)
                 p' = subst (Map.singleton x y) p in
                      tableau (p':unexp ++ [fm], lits, n-1) cont (env, k+1)
