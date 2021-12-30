@@ -1,4 +1,4 @@
-module Printing.Printer (printfol) where
+module Printing.Printer (printfol,printProp,printprops) where
 
 import Data.Prop
 import Data.List (intercalate)
@@ -31,3 +31,19 @@ printFormula f = case f of
   Iff for for' -> "(" ++ printFormula for ++ "⟷" ++ printFormula for' ++ ")"
   Forall s for -> "∀" ++ s ++ printFormula for
   Exists s for -> "∃" ++ s ++ printFormula for
+
+printProp :: Formula Prop -> String 
+printProp f = case f of  
+  Bot -> "⊥"
+  Top -> "⊤"
+  Atom (Prop fol) -> fol
+  Not for -> "¬" ++ printProp for
+  And for for' -> "(" ++ printProp for ++ "∧" ++ printProp for' ++ ")"
+  Or for for' -> "(" ++ printProp for ++ "∨" ++ printProp for' ++ ")"
+  Imp for for' -> "(" ++ printProp for ++ "→" ++ printProp for' ++ ")"
+  Iff for for' -> "(" ++ printProp for ++ "⟷" ++ printProp for' ++ ")"
+  Forall s for -> "∀" ++ s ++ printProp for
+  Exists s for -> "∃" ++ s ++ printProp for
+
+printprops :: [Formula Prop] -> String
+printprops ps = intercalate ", " (map printProp ps)
